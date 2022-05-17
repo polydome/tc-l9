@@ -1,0 +1,49 @@
+version: '3.7'
+services:
+    app:
+        # Serwer PHP jest budowany przez Dockerfile w katalogu `app`
+        build: app
+        ports:
+            - 9000:9000
+        networks:
+            backend:
+                ipv4_address: 172.20.0.10
+    server:
+        # Serwer Nginx jest budowany przez Dockerfile w katalogu `nginx`
+        build: nginx
+        environment:
+            # Zmienne środowiskowe są wykorzystywane w konfiguracji nginx
+            APP_ADDRESS: 172.20.0.10:9000
+            HTTP_PORT: 80
+        ports:
+            # Usługa jest udostępniona na porcie 6666
+            - 6666:80
+        networks:
+            - backend
+            - frontend
+    db:
+        image: mysql:5.7
+        volumes:
+            - db-store:/var/lib/mysql
+        environment:
+            # Dane logowania do bazy to root:root
+            MYSQL_ROOT_PASSWORD: "root"
+        networks:
+            - backend
+    phpmyadmin:
+        image: phpmyadmin/phpmyadmin
+        ports:
+            # Usługa udostępniona na porcie 6001.
+            - 6001:80
+        networks:
+            - backend
+
+volumes:
+    db-store:
+
+networks:
+    frontend:
+    backend:
+        ipam:
+            config:
+                - subnet: 172.20.0.0/16

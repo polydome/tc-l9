@@ -1,0 +1,26 @@
+events {
+
+}
+
+http {
+    server {
+        # Nasłuchiwany port jest określony w zmiennej środowiskowej
+        listen ${HTTP_PORT};
+
+        # Określa katalog główny plików aplikacji
+        root /var/www/html;
+        
+        # Określa zawartość serwowaną na ścieżce bazowej - plik index.php
+        location / {
+            try_files $uri /index.php$is_args$args;
+        }
+
+        # Konfiguruje przekazywanie plików .php do serwera PHP
+        location ~ ^/.+\.php(/|$) {
+            # Adres serwera jest określony w zmiennej środowiskowej
+            fastcgi_pass ${APP_ADDRESS};
+            include fastcgi_params;
+            fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+        }
+    }
+}
